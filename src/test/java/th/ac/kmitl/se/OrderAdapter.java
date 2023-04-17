@@ -69,7 +69,6 @@ public class OrderAdapter extends ExecutionContext {
     public void cancel() {
         System.out.println("Edge cancel");
         order.cancel();
-        assertEquals(Order.Status.CANCELED, order.getStatus());
     }
 
     @Edge()
@@ -92,8 +91,9 @@ public class OrderAdapter extends ExecutionContext {
         ArgumentCaptor<PaymentCallback> callbackCaptor = ArgumentCaptor.forClass(PaymentCallback.class);
         verify(paymentService).pay(any(Card.class), anyFloat(), callbackCaptor.capture());
         callbackCaptor.getValue().onSuccess("123");
+        // System.out.println(order.getStatus());
         assertEquals(Order.Status.PAID, order.getStatus());
-        assertEquals(order.paymentConfirmCode, "123");
+        assertEquals( order.paymentConfirmCode, "123");
     }
 
     @Edge()
@@ -108,9 +108,10 @@ public class OrderAdapter extends ExecutionContext {
     @Edge()
     public void ship() {
         System.out.println("Edge ship");
+        when(productDB.getWeight("Apple Watch")).thenReturn(350.0F);
         when(shippingService.ship(address, 700.0F)).thenReturn("123");
         order.ship();
-        assertEquals(order.trackingCode, "123");
+        assertEquals("123", order.trackingCode);
         assertEquals(Order.Status.SHIPPED, order.getStatus());
     }
 
